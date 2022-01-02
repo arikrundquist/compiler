@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
-public class Interpreter {
+public class Interpreter<T> {
 
     private final Object interpreter;
     private final HashMap<Class, Method> methods;
@@ -24,7 +24,7 @@ public class Interpreter {
         return f1.getName().compareTo(f2.getName());
     };
 
-    public void interpret(Object program) {
+    public void interpret(T program) {
         try {
             _interpret_(new Object[]{ program });
         }catch(Exception e) {
@@ -32,7 +32,7 @@ public class Interpreter {
         }
     }
 
-    class UnhandledSyntaxException extends Exception {
+    static class UnhandledSyntaxException extends Exception {
         public UnhandledSyntaxException() { }
         public UnhandledSyntaxException(String msg) {
             super(msg);

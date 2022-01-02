@@ -2,9 +2,8 @@
 public class Language {
 
     public static void main(String[] args) {
-        Interpreter interpreter = new Interpreter(new Language());
-        $program p = new $expression_list();
-        interpreter.interpret(p);
+        Interpreter<$program> interpreter = new Interpreter<$program>(new Language());
+        interpreter.interpret(new $expression_list());
     }
 
     public void handle($expression_list exp) {

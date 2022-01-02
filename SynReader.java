@@ -1,10 +1,10 @@
 
 import java.util.*;
-
-import javax.swing.text.html.HTMLEditorKit.Parser;
-
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 public class SynReader {
 
@@ -283,7 +283,7 @@ public class SynReader {
     for(SynObject so : this.objects) {
       sb.append(String.format("%sabstract class %s {", first ? "public " : "", so.name.name));
       if(first) {
-        sb.append(ParserWriter.writeParserMethod(this.objects) + "\n");
+        sb.append("\n" + ParserWriter.writeParserMethod(this.objects) + "\n");
         try {
           fw = new FileWriter(so.name.name + ".java");
         }catch(Exception e) {
@@ -352,16 +352,25 @@ public class SynReader {
     }
   }
 
-
   static class ParserWriter {
 
     public static String writeParserMethod(ArrayList<SynObject> objects) {
-      buildStateMachine(objects);
-      return "";
-    }
-
-    private static void buildStateMachine(ArrayList<SynObject> objects) {
-
+      StringBuffer sb = new StringBuffer();
+      
+      Parser p = new Parser();
+      try(
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos)
+      ) {  
+        oos.writeObject(p);
+        sb.append(
+          "\tprivate static Parser parser;\n" +
+          "\tprivate static final byte[] ba = " + Arrays.toString(baos.toByteArray()).replace('[', '{').replace(']', '}') + ";\n"
+        );
+      }catch(Exception e) {
+        e.printStackTrace();
+      }
+      return sb.toString();
     }
   }
 }
