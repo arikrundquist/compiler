@@ -140,7 +140,7 @@ public class SynReader {
     return Name.newName(name);
   }
   private static Operator getOperator(StringStream stream) {
-    char c = stream.peek();
+    /*char c = stream.peek();
     if(c == '?') {
       return new Operator("" + stream.next());
     }
@@ -149,9 +149,9 @@ public class SynReader {
       // removing support for *? and +? operators
       /*if(stream.peek() == '?') {
         operator += stream.next();
-      }*/
+      }* /
       return new Operator(operator);
-    }
+    }*/
     return null;
   }
   private static Regex getRegex(StringStream stream) {
@@ -364,7 +364,7 @@ public class SynReader {
     public static String writeParserMethod(ArrayList<SynObject> objects) {
       StringBuffer sb = new StringBuffer();
       
-      Parser p = new Parser();
+      Parser p = null;// = new Parser();
       String name = objects.get(0).name.name;
       try(
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

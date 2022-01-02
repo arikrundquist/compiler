@@ -32,6 +32,13 @@ public class Interpreter<T> {
         }
     }
 
+    public static Field[] getSortedFields(Object o) {
+        Field[] fields = o.getClass().getFields();
+        System.out.println(Arrays.toString(fields));
+        Arrays.sort(fields, sort);
+        return fields;
+    }
+
     static class UnhandledSyntaxException extends Exception {
         public UnhandledSyntaxException() { }
         public UnhandledSyntaxException(String msg) {
@@ -45,10 +52,8 @@ public class Interpreter<T> {
                 m.invoke(interpreter, o);
                 return true;
             }
-            Field[] fields = o.getClass().getFields();
-            System.out.println(Arrays.toString(fields));
+            Field[] fields = getSortedFields(o);
             if(fields.length != 0) {
-                Arrays.sort(fields, sort);
                 Object[] ofields = new Object[fields.length];
                 for(int i = 0; i < fields.length; i++) {
                     ofields[i] = fields[i].get(o);
