@@ -13,4 +13,3 @@ run : bin/SynReader.class
 
 clean :
 	-@rm bin/*
-	-@rm $*

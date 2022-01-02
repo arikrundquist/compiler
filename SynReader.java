@@ -146,9 +146,10 @@ public class SynReader {
     }
     if(c == '*' || c == '+') {
       String operator = "" + stream.next();
-      if(stream.peek() == '?') {
+      // removing support for *? and +? operators
+      /*if(stream.peek() == '?') {
         operator += stream.next();
-      }
+      }*/
       return new Operator(operator);
     }
     return null;
@@ -218,6 +219,7 @@ public class SynReader {
       Token tok = t.tokens.get(i + 1);
       if(tok instanceof Operator) {
         t.tokens.set(i, new List(t.tokens.remove(i), (Operator) tok));
+        i--;
       }
     }
     return t;
@@ -261,6 +263,7 @@ public class SynReader {
       }
       interpret(sb.toString());
       this.writeProgramClass();
+      //System.out.println(this.objects);
       s.close();
     }catch(Exception e) {
       e.printStackTrace();
@@ -283,7 +286,7 @@ public class SynReader {
     for(SynObject so : this.objects) {
       sb.append(String.format("%sabstract class %s {", first ? "public " : "", so.name.name));
       if(first) {
-        sb.append("\n" + ParserWriter.writeParserMethod(this.objects) + "\n");
+        sb.append(ParserWriter.writeParserMethod(this.objects) + "\n");
         try {
           fw = new FileWriter(so.name.name + ".java");
         }catch(Exception e) {
@@ -339,8 +342,12 @@ public class SynReader {
     String type;
     if(l.token instanceof Name) {
       type = ((Name) l.token).name;
-    }else {
+    }else if(l.token instanceof Regex) {
       type = "String";
+    }else if(l.token instanceof List) {
+      type = handleList((List) l.token, neededLists, neededNullables);
+    }else {
+      throw new IllegalArgumentException("Did not expect type " + l.token.getClass().getSimpleName());
     }
     Operator o = l.operator;
     if(o.operator.equals("?")) {
@@ -358,6 +365,7 @@ public class SynReader {
       StringBuffer sb = new StringBuffer();
       
       Parser p = new Parser();
+      String name = objects.get(0).name.name;
       try(
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos)
@@ -365,7 +373,20 @@ public class SynReader {
         oos.writeObject(p);
         sb.append(
           "\tprivate static Parser parser;\n" +
-          "\tprivate static final byte[] ba = " + Arrays.toString(baos.toByteArray()).replace('[', '{').replace(']', '}') + ";\n"
+          "\tprivate static final byte[] ba = " + Arrays.toString(baos.toByteArray()).replace('[', '{').replace(']', '}') + ";\n" +
+          "\tstatic {\n" +
+          "\t\ttry(\n" +
+          "\t\t\tjava.io.ByteArrayInputStream bais = new java.io.ByteArrayInputStream(ba);\n" +
+          "\t\t\tjava.io.ObjectInputStream ois = new java.io.ObjectInputStream(bais)\n" +
+          "\t\t) {\n" +
+          "\t\t\tparser = (Parser) ois.readObject();\n" +
+          "\t\t}catch(Exception e) {\n" +
+          "\t\t\te.printStackTrace();\n" +
+          "\t\t}\n" +
+          "\t}\n\n" +
+          "\tpublic static final " + name + " parse(String code) {\n" +
+          "\t\treturn (" + name + ") parser.parse(code);\n" +
+          "\t}\n"
         );
       }catch(Exception e) {
         e.printStackTrace();

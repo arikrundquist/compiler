@@ -5,4 +5,4 @@ expression_list : expression+
 @expression
 int : [0-9]+
 add: expression [+] "+" expression
-test : expression? expression*
+test : expression? expression* expression*??
