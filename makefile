@@ -1,11 +1,11 @@
 
 all : run
 
-%.run : bin
+%.run : bin/%.class
 	@java -cp bin $*
 
 bin/%.class : *.java
-	-@javac *.java --release 8
+	@javac *.java --release 8
 	-@mv *.class bin
 
 run : bin/SynReader.class

@@ -1,5 +1,8 @@
 
 import java.util.*;
+
+import org.w3c.dom.ls.LSException;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
@@ -140,7 +143,7 @@ public class SynReader {
     return Name.newName(name);
   }
   private static Operator getOperator(StringStream stream) {
-    /*char c = stream.peek();
+    char c = stream.peek();
     if(c == '?') {
       return new Operator("" + stream.next());
     }
@@ -149,9 +152,9 @@ public class SynReader {
       // removing support for *? and +? operators
       /*if(stream.peek() == '?') {
         operator += stream.next();
-      }* /
+      }*/
       return new Operator(operator);
-    }*/
+    }
     return null;
   }
   private static Regex getRegex(StringStream stream) {
@@ -317,7 +320,7 @@ public class SynReader {
       }
     }
     for(String list : neededLists) {
-      sb.append(String.format("class %s {\n\tpublic ArrayList<%s> list = new ArrayList<%s>();\n}\n", getListName(list), list, list));
+      sb.append(String.format("class %s {\n\tpublic ArrayList<%s> list;\n}\n", getListName(list), list, list));
     }
     for(String nullable : neededNullables) {
       sb.append(String.format("class %s {\n\tpublic %s nullable;\n}\n", getNullableName(nullable), nullable));
@@ -333,10 +336,11 @@ public class SynReader {
   }
 
   private String getNullableName(String type) {
-    return type + "$nullable";
+    Parser p = new Parser(null);
+    return type + Parser.nullableSuffix();
   }
   private String getListName(String type) {
-    return type + "$list";
+    return type + Parser.listSuffix();
   }
   private String handleList(List l, HashSet<String> neededLists, HashSet<String> neededNullables) {
     String type;
@@ -361,10 +365,102 @@ public class SynReader {
 
   static class ParserWriter {
 
-    public static String writeParserMethod(ArrayList<SynObject> objects) {
+    protected static class StateMachineBuilderHelper {
+      private final HashMap<String, Parser.StateMachineBuilder> map = new HashMap<String, Parser.StateMachineBuilder>();
+      public Parser.StateMachineBuilder get(String s) {
+        Parser.StateMachineBuilder smb = map.get(s);
+        if(smb == null) {
+          smb = new Parser.StateMachineBuilder();
+          map.put(s, smb);
+        }
+        return smb;
+      }
+    }
+
+    private static <T> LinkedList<T> add(LinkedList<T> l1, LinkedList<T> l2) {
+      for(T t : l2) {
+        l1.add(t);
+      }
+      return l1;
+    }
+    private static LinkedList<LinkedList<GrammerRule>> linked() {
+      LinkedList<LinkedList<GrammerRule>> list = new LinkedList<LinkedList<GrammerRule>>();
+      list.add(new LinkedList<GrammerRule>());
+      return list;
+    }
+    private static <T> LinkedList<LinkedList<T>> copy(LinkedList<LinkedList<T>> list) {
+      LinkedList<LinkedList<T>> copy = new LinkedList<LinkedList<T>>();
+      for(LinkedList<T> l : list) {
+        LinkedList<T> l2 = new LinkedList<T>();
+        for(T t : l) {
+          l2.add(t);
+        }
+        copy.add(l2);
+      }
+      return copy;
+    }
+    private static LinkedList<LinkedList<GrammerRule>> addRule(LinkedList<LinkedList<GrammerRule>> rules, GrammerRule rule) {
+      for(LinkedList<GrammerRule> list : rules) {
+        list.add(rule);
+      }
+      return rules;
+    }
+    private static LinkedList<LinkedList<GrammerRule>> addRule(LinkedList<LinkedList<GrammerRule>> rule, Token t) {
+      if(t instanceof Regex) {
+        addRule(rule, GrammerRule.regex(((Regex) t).regex));
+      }else if(t instanceof Name) {
+        Name n = (Name) t;
+        addRule(rule, GrammerRule.build(n.name));
+        addRule(rule, GrammerRule.accept(n.name));
+      }else if(t instanceof List) {
+        List l = (List) t;
+        if(l.operator.operator.equals("?")) {
+          LinkedList<LinkedList<GrammerRule>> copy = copy(rule);
+          addRule(rule, l.token);
+          addRule(copy, GrammerRule.accept("null"));
+          add(rule, copy);
+        }else if(l.operator.operator.equals("+")) {
+          
+        }else if(l.operator.operator.equals("*")) {
+
+        }else {
+          throw new IllegalArgumentException(l.operator.operator);
+        }
+      }else {
+        throw new IllegalArgumentException(t.getClass().getName());
+      }
+      return rule;
+    }
+    protected static void removeLeftRecursion(HashMap<String, LinkedList<LinkedList<GrammerRule>>> rules) {
+      System.out.println(rules);
+    }
+    protected static HashMap<String, LinkedList<LinkedList<GrammerRule>>> getRules(ArrayList<SynObject> objects) {
+      HashMap<String, LinkedList<LinkedList<GrammerRule>>> rules = new HashMap<String, LinkedList<LinkedList<GrammerRule>>>();
+      for(SynObject syn : objects) {
+        LinkedList<LinkedList<GrammerRule>> rule = linked();
+        for(Target t : syn.targets) {
+          for(LinkedList<GrammerRule> l : addRule(linked(), t.name)) {
+            rule.add(l);
+          }
+          LinkedList<LinkedList<GrammerRule>> target = linked();
+          for(Token tok : t.tokens) {
+            addRule(target, tok);
+          }
+          rules.put(t.name.name, target);
+        }
+        rules.put(syn.name.name, rule);
+      }
+      removeLeftRecursion(rules);
+      return rules;
+    }
+    protected static Parser.StateMachine makeStateMachine(ArrayList<SynObject> objects) {
+      HashMap<String, LinkedList<LinkedList<GrammerRule>>> rules = getRules(objects);
+      return null;
+    }
+    protected static String writeParserMethod(ArrayList<SynObject> objects) {
       StringBuffer sb = new StringBuffer();
       
-      Parser p = null;// = new Parser();
+      Parser p = new Parser(makeStateMachine(objects));
       String name = objects.get(0).name.name;
       try(
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
