@@ -10,6 +10,9 @@ public abstract class GrammerRule {
     public static AcceptRule accept(String name) {
         return new AcceptRule(name);
     }
+    public static GrammerRule _null() {
+        return GrammerRule.accept("null");
+    }
 
     public static class RegexRule extends GrammerRule {
         private final String regex;
