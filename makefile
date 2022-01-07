@@ -16,4 +16,9 @@ bin :
 clean :
 	-@rm -rf bin/*
 
+save :
+	git add .
+	git commit -m "saving"
+	git push
+
 .PHONY : bin
