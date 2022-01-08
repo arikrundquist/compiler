@@ -1,24 +1,28 @@
 
-#JAVA = $(wildcard *.java)
-#CLASS = $(patsubst %.java,%.class,$(JAVA))
+JAVA = $(wildcard src/*.java) $(wildcard src/*/*.java) $(wildcard src/*/*/*.java)
+CLASS = $(patsubst src/%.java,bin/%.class,$(JAVA))
+
+JAVAC_FLAGS = --release 8 -d bin -Xlint:unchecked
 
 all : bin
 
-bin :
-	@javac compiler/*.java --release 8 -d bin
+bin : $(CLASS)
 
-%.run : bin
-	@java -cp bin $*
+$(CLASS) : $(JAVA)
+	@javac $(JAVA) $(JAVAC_FLAGS)
+
+%.run :
+	-@make bin
+	-@java -cp bin $*
 
 #run : bin/SynReader.class
 #	@java -cp bin SynReader test.syn
 
 clean :
 	-@rm -rf bin/*
+	-@clear
 
 save :
 	git add .
 	git commit -m "saving"
 	git push
-
-.PHONY : bin
