@@ -16,6 +16,7 @@ public abstract class Language {
     }
 
     public static void main(String[] args) {
-        LanguageBuilderBuilder.buildFromFile("Lang", "lang", "src/lang/Lang.syn");
+        
+
     }
 }

@@ -57,18 +57,16 @@ public final class LanguageBuilder {
         this.qualifiedNames.put(ptr, qualifiedName);
     }
 
-    public Pointer<SyntaxRuleBuilder> token(String name, String regex, Pointer<OptionRuleBuilder> _super) {
+    public Pointer<? extends LangElementBuilder> token(String name, String regex, Pointer<OptionRuleBuilder> _super) {
         Pointer<TokenBuilder> token = new Pointer<TokenBuilder>(new TokenBuilder(name, regex));
         this.register(token, TOKENS + "." + name);
         this.tokens.append(token.value.getClassString(this));
-        Pointer<SyntaxRuleBuilder> wrapper = this.rule(name, _super);
+        @SuppressWarnings("unchecked")
+        Pointer<SyntaxRuleBuilder> wrapper = (Pointer<SyntaxRuleBuilder>) this.rule(name, _super);
         this.define(wrapper, token);
         return wrapper;
     }
-    public Pointer<SyntaxRuleBuilder> token(String name, String regex) {
-        return this.token(name, regex, null);
-    }
-
+    public Pointer<? extends LangElementBuilder> token(String name, String regex) { return this.token(name, regex, null); }
     public Pointer<OptionRuleBuilder> option(String name, Pointer<OptionRuleBuilder> _super) {
         Pointer<OptionRuleBuilder> option = new Pointer<OptionRuleBuilder>(new OptionRuleBuilder(name, _super));
         this.register(option, OPTIONS + "." + name);
@@ -83,12 +81,12 @@ public final class LanguageBuilder {
     }
     public Pointer<SyntaxRuleBuilder> rule(String name) { return this.rule(name, null); }
     public enum ListMode {ZEROFEW, ZEROMANY, ONEFEW, ONEMANY};
-    public Pointer<ListRuleBuilder> list(String name, Pointer<? extends LangElementBuilder> toList, ListMode mode) {
+    public Pointer<? extends LangElementBuilder> list(String name, Pointer<? extends LangElementBuilder> toList, ListMode mode) {
         Pointer<ListRuleBuilder> list = new Pointer<ListRuleBuilder>(new ListRuleBuilder(name, toList, mode));
         this.lists.append(list.value.getClassString(this));
         return list;
     }
-    public Pointer<NullableRuleBuilder> nullable(String name, Pointer<LangElementBuilder> toMakeNullable) {
+    public Pointer<? extends LangElementBuilder> nullable(String name, Pointer<LangElementBuilder> toMakeNullable) {
         Pointer<NullableRuleBuilder> nullable = new Pointer<NullableRuleBuilder>(new NullableRuleBuilder(name, toMakeNullable));
         this.register(nullable, NULLABLES + "." + name);
         return nullable;
@@ -155,7 +153,7 @@ public final class LanguageBuilder {
             return sb.toString();
         }
     }
-    public static final class ListRuleBuilder extends PrimativeRuleBuilder {
+    private static final class ListRuleBuilder extends PrimativeRuleBuilder {
         private final ListMode mode;
         private final Pointer<? extends LangElementBuilder> toList;
         private ListRuleBuilder(String name, Pointer<? extends LangElementBuilder> toList, ListMode mode) {
@@ -175,7 +173,7 @@ public final class LanguageBuilder {
             return super.getClassString("\t\t\tpublic " + this.name + "() { super(" + builder.qualifiedNames.get(this.toList) + ".class); }\n", type);
         }
     }
-    public static final class NullableRuleBuilder extends PrimativeRuleBuilder {
+    private static final class NullableRuleBuilder extends PrimativeRuleBuilder {
         private final Pointer<LangElementBuilder> toMakeNullable;
         private NullableRuleBuilder(String name, Pointer<LangElementBuilder> toMakeNullable) {
             super(name);
