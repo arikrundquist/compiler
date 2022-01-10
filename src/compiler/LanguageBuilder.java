@@ -7,6 +7,7 @@ public final class LanguageBuilder {
 
     private final StringBuffer lists = new StringBuffer(), tokens = new StringBuffer(), options = new StringBuffer(), rules = new StringBuffer(), nullables = new StringBuffer();
     private final java.util.HashMap<Pointer<? extends LangElementBuilder>, String> qualifiedNames = new java.util.HashMap<Pointer<? extends LangElementBuilder>, String>();
+    private final java.util.HashMap<String, Pointer<? extends LangElementBuilder>> pointers = new java.util.HashMap<String, Pointer<? extends LangElementBuilder>>();
 
     private static final String LISTS = "Lists", OPTIONS = "Optionals", TOKENS = "Tokens", RULES = "Rules", NULLABLES = "Nullables";
 
@@ -56,11 +57,16 @@ public final class LanguageBuilder {
         this.qualifiedNames.put(ptr, qualifiedName);
     }
 
-    public Pointer<TokenBuilder> token(String name, String regex) {
+    public Pointer<SyntaxRuleBuilder> token(String name, String regex, Pointer<OptionRuleBuilder> _super) {
         Pointer<TokenBuilder> token = new Pointer<TokenBuilder>(new TokenBuilder(name, regex));
         this.register(token, TOKENS + "." + name);
         this.tokens.append(token.value.getClassString(this));
-        return token;
+        Pointer<SyntaxRuleBuilder> wrapper = this.rule(name, _super);
+        this.define(wrapper, token);
+        return wrapper;
+    }
+    public Pointer<SyntaxRuleBuilder> token(String name, String regex) {
+        return this.token(name, regex, null);
     }
 
     public Pointer<OptionRuleBuilder> option(String name, Pointer<OptionRuleBuilder> _super) {
@@ -91,7 +97,7 @@ public final class LanguageBuilder {
 
 
 
-    private static abstract class LangElementBuilder {
+    public static abstract class LangElementBuilder {
         protected final String name;
         private LangElementBuilder(String name) {
             if(!name.matches("^[_a-zA-Z$][_a-zA-Z$0-9]*$")) {
@@ -102,9 +108,15 @@ public final class LanguageBuilder {
         protected String getClassString(LanguageBuilder builder) {
             return this.getClassString("", null);
         }
-        protected String getClassString(String contents, String _extends) {
+        protected final String getClassString(String contents, String _extends) {
             return
                 "\t\tpublic static class " + this.name + (_extends == null ? "" : " extends " + _extends) + " {\n" +
+                contents +
+                "\t\t}\n";
+        }
+        protected final String getAbstractClassString(String contents, String _extends) {
+            return
+                "\t\tpublic static abstract class " + this.name + (_extends == null ? "" : " extends " + _extends) + " {\n" +
                 contents +
                 "\t\t}\n";
         }
@@ -114,14 +126,33 @@ public final class LanguageBuilder {
             super(name);
         }
     }
-    public static final class TokenBuilder extends PrimativeRuleBuilder {
+    private static final class TokenBuilder extends PrimativeRuleBuilder {
         private final String regex;
         private TokenBuilder(String name, String regex) {
             super(name);
             this.regex = regex;
         }
         protected String getClassString(LanguageBuilder builder) {
-            return super.getClassString("\t\t\tpublic " + this.name + "() { super(\"" + this.regex + "\"); }\n", "compiler.syntax.Token");
+            return super.getClassString("\t\t\tpublic " + this.name + "() { super(\"" + TokenBuilder.escape(this.regex) + "\"); }\n", "compiler.syntax.Token");
+        }
+        private static String escape(String string) {
+            StringBuffer sb = new StringBuffer();
+            for(char c : string.toCharArray()) {
+                switch(c) {
+                case '\n':
+                case '\r':
+                case '\t':
+                case '\"':
+                case '\'':
+                case '\f':
+                case '\b':
+                case '\\':
+                    sb.append('\\');
+                default:
+                    sb.append(c);
+                }
+            }
+            return sb.toString();
         }
     }
     public static final class ListRuleBuilder extends PrimativeRuleBuilder {
@@ -141,28 +172,41 @@ public final class LanguageBuilder {
                 case ONEMANY: type = "compiler.syntax.OneManyList"; break;
             }
             type += String.format("<%s>", builder.qualifiedNames.get(this.toList));
-            return super.getClassString("", type);
+            return super.getClassString("\t\t\tpublic " + this.name + "() { super(" + builder.qualifiedNames.get(this.toList) + ".class); }\n", type);
         }
     }
     public static final class NullableRuleBuilder extends PrimativeRuleBuilder {
+        private final Pointer<LangElementBuilder> toMakeNullable;
         private NullableRuleBuilder(String name, Pointer<LangElementBuilder> toMakeNullable) {
             super(name);
+            this.toMakeNullable = toMakeNullable;
+        }
+        protected String getClassString(LanguageBuilder builder) {
+            return super.getClassString("\t\t\tpublic " + this.name + "() { super(" + builder.qualifiedNames.get(this.toMakeNullable) + ".class); }\n", String.format("compiler.syntax.Nullable<%s>", builder.qualifiedNames.get(this.toMakeNullable)));
         }
     }
     private static abstract class RuleBuilder extends LangElementBuilder {
+        protected Pointer<OptionRuleBuilder> _super;
         private RuleBuilder(String name, Pointer<OptionRuleBuilder> _super) {
             super(name);
+            this._super = _super;
         }
     }
     public static final class OptionRuleBuilder extends RuleBuilder {
         private OptionRuleBuilder(String name, Pointer<OptionRuleBuilder> _super) {
             super(name, _super);
         }
+        protected String getClassString(LanguageBuilder builder) {
+            return super.getAbstractClassString("", builder.qualifiedNames.get(this._super));
+        }
     }
     public static final class SyntaxRuleBuilder extends RuleBuilder {
         private java.util.List<Pointer<? extends LangElementBuilder>> rule = new java.util.ArrayList<Pointer<? extends LangElementBuilder>>();
         private SyntaxRuleBuilder(String name, Pointer<OptionRuleBuilder> _super) {
             super(name, _super);
+        }
+        protected String getClassString(LanguageBuilder builder) {
+            return null;
         }
     }
     @SafeVarargs

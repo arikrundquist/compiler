@@ -21,6 +21,7 @@ public final class Lang extends compiler.Language {
 		private Lists() { }
 
 		public static class AList extends compiler.syntax.OneManyList<Tokens.A> {
+			public AList() { super(Tokens.A.class); }
 		}
 	}
 	public static final class Optionals {

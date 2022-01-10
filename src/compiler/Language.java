@@ -16,8 +16,6 @@ public abstract class Language {
     }
 
     public static void main(String[] args) {
-        LanguageBuilder builder = new LanguageBuilder("Lang", "lang");
-        builder.list("AList", builder.token("A", "[aA]"), LanguageBuilder.ListMode.ONEMANY);
-        builder.build("src");
+        LanguageBuilderBuilder.buildFromFile("Lang", "lang", "src/lang/Lang.syn");
     }
 }
