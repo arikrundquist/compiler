@@ -116,10 +116,6 @@ inumber  {digit}+
 escape   \\[\\'"trn]
 char     \'([^'\\]|{escape})\'
 string   \"([^"\\]|{escape})*\"
-
-   /* comments may appear in two forms: */
-   /* 1. (\{[^}]*\}), a {, followed by any non-} characters, and then a closing } */
-   /* 2. (\(\*([^*]|\* /[^)]])*\*\)), a (*, then a non-* or an * that is followed by a non-), and a final *) */
 startcomment   [/][*]
 endcomment     [*][/]
 insidecomment  ([.]|[^.])

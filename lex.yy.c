@@ -567,12 +567,8 @@ TOKEN log_token(TOKEN t) {
 #define handle(type, handler) yylval = log_token(handler); return type
 #define op(type, op) handle(type, makeop(op))
 #line 569 "lex.yy.c"
-#line 121 "lexer.l"
-   /* comments may appear in two forms: */
-   /* 1. (\{[^}]*\}), a {, followed by any non-} characters, and then a closing } */
-   /* 2. (\(\*([^*]|\* /[^)]])*\*\)), a (*, then a non-* or an * that is followed by a non-), and a final *) */
 
-#line 575 "lex.yy.c"
+#line 571 "lex.yy.c"
 
 #define INITIAL 0
 #define INSIDE_COMMENT 1
@@ -790,10 +786,10 @@ YY_DECL
 		}
 
 	{
-#line 131 "lexer.l"
+#line 126 "lexer.l"
 
 
-#line 796 "lex.yy.c"
+#line 792 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -853,18 +849,18 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 133 "lexer.l"
+#line 128 "lexer.l"
 { /* nothing */ }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 134 "lexer.l"
+#line 129 "lexer.l"
 { /* nothing */ }
 	YY_BREAK
 
 case 3:
 YY_RULE_SETUP
-#line 136 "lexer.l"
+#line 131 "lexer.l"
 { nested_comment++; BEGIN(INSIDE_COMMENT); }
 	YY_BREAK
 
@@ -872,52 +868,52 @@ YY_RULE_SETUP
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 139 "lexer.l"
+#line 134 "lexer.l"
 { /* nothing */ }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 140 "lexer.l"
+#line 135 "lexer.l"
 { if(--nested_comment == 0) { BEGIN(INITIAL); }}
 	YY_BREAK
 
 case 6:
 YY_RULE_SETUP
-#line 143 "lexer.l"
+#line 138 "lexer.l"
 { handle(_integer, makeint()); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 144 "lexer.l"
+#line 139 "lexer.l"
 { handle(_floating, makereal()); }
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 145 "lexer.l"
+#line 140 "lexer.l"
 { handle(_string, makestring()); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 146 "lexer.l"
+#line 141 "lexer.l"
 { handle(_identifier, makeid()); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 149 "lexer.l"
+#line 144 "lexer.l"
 { op(_assign, ASSIGN); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 152 "lexer.l"
+#line 147 "lexer.l"
 { /* todo: handle this */ }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 154 "lexer.l"
+#line 149 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 920 "lex.yy.c"
+#line 916 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(INSIDE_COMMENT):
 	yyterminate();
@@ -1923,7 +1919,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 154 "lexer.l"
+#line 149 "lexer.l"
 
 
 int yywrap() { return(1); }
