@@ -1,28 +1,26 @@
 
-JAVA = $(wildcard src/*.java) $(wildcard src/*/*.java) $(wildcard src/*/*/*.java)
-CLASS = $(patsubst src/%.java,bin/%.class,$(JAVA))
+TESTS = $(wildcard tests/*.test)
 
-JAVAC_FLAGS = --release 8 -d bin -Xlint:unchecked
+test : $(TESTS)
+	@echo all passed!
 
-all : bin
+parser : lex.yy.c parser.tab.c *.c
+	gcc *.c -o parser
 
-bin : $(CLASS)
+lex.yy.c : *.h lexer.l
+	lex lexer.l
 
-$(CLASS) : $(JAVA)
-	@javac $(JAVA) $(JAVAC_FLAGS)
+parser.tab.c : *.h parser.y
+	bison -d parser.y
 
-%.run :
-	-@make bin
-	-@java -cp bin $*
+%.test : %.out parser phony
+	@cat $@ | ./parser
+	@diff -b lexer.log $<
+	@echo $@ passed!
 
-#run : bin/SynReader.class
-#	@java -cp bin SynReader test.syn
+mktest% :
+	@touch tests/test$*.test tests/test$*.out
 
-clean :
-	-@rm -rf bin/*
-	-@clear
+phony : ;
 
-save :
-	git add .
-	git commit -m "saving"
-	git push
+.PHONY : phony
