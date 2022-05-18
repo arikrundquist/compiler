@@ -7,7 +7,8 @@ typedef enum tokentype {
     STRING,
     OPERATOR,
     RESERVED,
-    IDENTIFIER
+    IDENTIFIER,
+    END_TOKEN_TYPES
 } tokentype;
 typedef enum datatype {
     NONEDTYPE,
@@ -16,8 +17,22 @@ typedef enum datatype {
     CHARACTER,
     BOOLEAN,
     OPTIONAL,
-    OBJECT
+    OBJECT,
+    END_DATA_TYPES
 } datatype;
+typedef enum operator {
+    NOOP,
+    ASSIGN,
+    END_OPERATORS
+} operator;
+typedef enum reserved {
+    NORES,
+    IF,
+    FOR,
+    WHILE,
+    CLASS,
+    END_RESERVED
+} reserved;
 
 typedef struct tokn {
     tokentype type;
@@ -26,14 +41,16 @@ typedef struct tokn {
     struct tokn *link;
     union {
         char *stringval;
-        int whichval;
+        reserved reservedval;
+        operator operatorval;
         int intval;
         double realval;
     } tokenval;
 } token;
 typedef token *TOKEN;
 #define intval tokenval.intval
-#define whichval tokenval.whichval
+#define reservedval tokenval.reservedval
+#define operatorval tokenval.operatorval
 #define realval tokenval.realval
 #define stringval tokenval.stringval
 

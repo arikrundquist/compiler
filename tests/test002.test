@@ -1,6 +1,8 @@
-123 /* 456 /** 78**9**87 **/ 654 */ 321
-01230 /** 04560 /** 078**9**870 **/ 06540 **/ 03210
-123.0 123.456 123e-4 123e4 123.456e-7 123.456e7
-// this is a comment  that will block /* <- this comment start
-/* this is a comment that will block // <- this comment start */
-"comments /* appear // in */ strings"
+
+/*
+
+test handling of escape sequences
+
+*/
+
+str = "testing |\t|\r|\n|\"|\'|\\| escape sequences"

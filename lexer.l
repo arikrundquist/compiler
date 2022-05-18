@@ -12,24 +12,34 @@ int nested_comment = 0;
 TOKEN talloc() {
    TOKEN t = (TOKEN) calloc(1, sizeof(token));
 }
-
+TOKEN mktoken(tokentype type, datatype dtype) {
+   TOKEN t = talloc();
+   t->type = type;
+   t->dtype = dtype;
+   return t;
+}
 
 TOKEN makeint() {
    int inum;
    sscanf(yytext, "%d", &inum);
-   TOKEN t = talloc();
-   t->type = NUMERIC;
-   t->dtype = INTEGER;
+   TOKEN t = mktoken(NUMERIC, INTEGER);
    t->intval = inum;
    return t;
 }
 TOKEN makereal() {
    double fnum;
    sscanf(yytext, "%lf", &fnum);
-   TOKEN t = talloc();
-   t->type = NUMERIC;
-   t->dtype = FLOATING;
+   TOKEN t = mktoken(NUMERIC, FLOATING);
    t->realval = fnum;
+   return t;
+}
+TOKEN makeid() {
+   int len = 0;
+   for(; yytext[len++] != 0;);
+   char *str = (char*) malloc(len);
+   for(int i = 0; i < len; str[i] = yytext[i], i++);
+   TOKEN t = mktoken(IDENTIFIER, 0);
+   t->stringval = str;
    return t;
 }
 TOKEN makestring() {
@@ -64,12 +74,21 @@ TOKEN makestring() {
       str[i1] = c;
    }
    str[len] = 0;
-   TOKEN t = talloc();
-   t->type = STRING;
-   t->dtype = OBJECT;
+   TOKEN t = mktoken(STRING, OBJECT);
    t->stringval = str;
    return t;
 }
+TOKEN makeop(int op) {
+   TOKEN t = mktoken(OPERATOR, 0);
+   t->operatorval = op;
+   return t;
+}
+TOKEN makeres(int res) {
+   TOKEN t = mktoken(RESERVED, 0);
+   t->reservedval = res;
+   return t;
+}
+
 
 #define DEBUG 1
 FILE *logfile = NULL;
@@ -84,8 +103,10 @@ TOKEN log_token(TOKEN t) {
    return t;
 }
 #define handle(type, handler) yylval = log_token(handler); return type
+#define op(type, op) handle(type, makeop(op))
 %}
 
+bad      .
 ws       [ \t\n]+
 alpha    [_$A-Za-z]
 digit    [0-9]
@@ -101,7 +122,7 @@ string   \"([^"\\]|{escape})*\"
    /* 2. (\(\*([^*]|\* /[^)]])*\*\)), a (*, then a non-* or an * that is followed by a non-), and a final *) */
 startcomment   [/][*]
 endcomment     [*][/]
-insidecomment  .
+insidecomment  ([.]|[^.])
 linecomment    [/][/][^\n]*
 
 %x INSIDE_COMMENT
@@ -118,9 +139,16 @@ linecomment    [/][/][^\n]*
 {endcomment}      { if(--nested_comment == 0) { BEGIN(INITIAL); }}
 }
 
-{inumber}   { handle(integer, makeint()); }
-{fnumber}   { handle(floating, makereal()); }
-{string}    { handle(string, makestring()); }
+{inumber}   { handle(_integer, makeint()); }
+{fnumber}   { handle(_floating, makereal()); }
+{string}    { handle(_string, makestring()); }
+{id}        { handle(_identifier, makeid()); }
+
+
+"="         { op(_assign, ASSIGN); }
+
+
+{bad}       { /* todo: handle this */ }
 
 %%
 
