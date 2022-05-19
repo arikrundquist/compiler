@@ -5,4 +5,8 @@ test handling of escape sequences
 
 */
 
-str = "testing |\t|\r|\n|\"|\'|\\| escape sequences"
+actor test2 {
+
+    str = "testing |\t|\r|\n|\"|\'|\\| escape sequences"
+
+}

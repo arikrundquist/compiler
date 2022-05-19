@@ -42,6 +42,28 @@ TOKEN makeid() {
    t->stringval = str;
    return t;
 }
+TOKEN makechar() {
+   char c = yytext[1];
+   if(c == '\\') {
+      c = yytext[2];
+      switch(c) {
+      case('t'):
+         c = '\t';
+         break;
+      case('r'):
+         c = '\r';
+         break;
+      case('n'):
+         c = '\n';
+         break;
+      default:
+         break;
+      }
+   }
+   TOKEN t = mktoken(NUMERIC, CHARACTER);
+   t->intval = c;
+   return t;
+}
 TOKEN makestring() {
    int len = -2;
    char c;
@@ -104,6 +126,7 @@ TOKEN log_token(TOKEN t) {
 }
 #define handle(type, handler) yylval = log_token(handler); return type
 #define op(type, op) handle(type, makeop(op))
+#define res(type, res) handle(type, makeres(res))
 %}
 
 bad      .
@@ -138,13 +161,56 @@ linecomment    [/][/][^\n]*
 {inumber}   { handle(_integer, makeint()); }
 {fnumber}   { handle(_floating, makereal()); }
 {string}    { handle(_string, makestring()); }
+{char}      { handle(_character, makechar()); }
+
+"actor"     { res(_actor, ACTOR); }
+"class"     { res(_class, CLASS); }
+"for"       { res(_for, FOR); }
+"if"        { res(_if, IF); }
+"return"    { res(_return, RETURN); }
+"while"     { res(_while, WHILE); }
+
+"~"         { op(_tilde, TILDE); }
+"%"         { op(_percent, PERCENT); }
+"^"         { op(_caret, CARET); }
+"&"         { op(_and, AND); }
+"*"         { op(_mult, MULT); }
+"-"         { op(_sub, SUB); }
+"+"         { op(_add, ADD); }
+"="         { op(_assign, ASSIGN); }
+"/"         { op(_div, DIV); }
+"|"         { op(_pipe, PIPE); }
+"!"         { op(_exclamation, EXCLAMATION); }
+"@"         { op(_at, AT); }
+"#"         { op(_pound, POUND); }
+"("         { op(_lparen, LPAREN); }
+")"         { op(_rparen, RPAREN); }
+"["         { op(_lsbracket, LSBRACKET); }
+"]"         { op(_rsbracket, RSBRACKET); }
+"{"         { op(_lcbracket, LCBRACKET); }
+"}"         { op(_rcbracket, RCBRACKET); }
+";"         { op(_semicolon, SEMICOLON); }
+":"         { op(_colon, COLON); }
+","         { op(_comma, COMMA); }
+"."         { op(_dot, DOT); }
+"<"         { op(_labracket, LABRACKET); }
+">"         { op(_rabracket, RABRACKET); }
+"?"         { op(_question, QUESTION); }
+"=="        { op(_eqeq, EQEQ); }
+"!="        { op(_neq, NEQ); }
+"<="        { op(_leq, LEQ); }
+">="        { op(_geq, GEQ); }
+"&&"        { op(_andand, ANDAND); }
+"--"        { op(_subsub, SUBSUB); }
+"++"        { op(_addadd, ADDADD); }
+"**"        { op(_multmult, MULTMULT); }
+"||"        { op(_pipepipe, PIPEPIPE); }
+
+
 {id}        { handle(_identifier, makeid()); }
 
 
-"="         { op(_assign, ASSIGN); }
-
-
-{bad}       { /* todo: handle this */ }
+{bad}       { handle(_bad, talloc()); }
 
 %%
 

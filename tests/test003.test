@@ -1,0 +1,24 @@
+
+/*
+
+
+
+*/
+
+actor test3 {
+
+    if(x + y < 13) {
+        if(x = 13 == 13) {
+            return 19
+        }
+    }
+    z = 0
+    for(x = 16 y = 19; 19 < 2; x++ y++) {
+        z += (x + 6 * y - 2) / 3
+    }
+    while(z-- > 3) {
+        z--
+    }
+    while(++z < 12);
+    return z
+}

@@ -3,8 +3,8 @@
 
 char *tokentypes[END_TOKEN_TYPES] = {"NULL", "NUMERIC", "STRING", "OPERATOR", "RESERVED", "IDENTIFIER"};
 char *datatypes[END_DATA_TYPES] = {"NULL", "INTEGER", "FLOATING", "CHARACTER", "BOOLEAN", "OPTIONAL", "OBJECT"};
-char *operators[END_OPERATORS] = {"NULL", "="};
-char *reserveds[END_RESERVED] = {"NULL", "IF", "FOR", "WHILE", "CLASS"};
+char *operators[END_OPERATORS] = {"NULL", "~", "%", "^", "&", "*", "-", "+", "=", "/", "|", "!", "@", "#", "(", ")", "[", "]", "{", "}", ";", ":", ",", ".", "<", ">", "?", "&&", "--", "++", "**", "||", "==", "!=", "<=", ">="};
+char *reserveds[END_RESERVED] = {"NULL", "actor", "class", "for", "if", "return", "while"};
 
 void fpprint(FILE *f, TOKEN t) {
     fprintf(f, "%s", tokentypes[t->type]);
@@ -18,11 +18,17 @@ void fpprint(FILE *f, TOKEN t) {
         if(t->dtype == FLOATING) {
             fprintf(f, "\t%lf", t->realval);
         }
+        if(t->dtype == CHARACTER) {
+            fprintf(f, "\t%c", (char) t->realval);
+        }
     }
     if(t->type == STRING || t->type == IDENTIFIER) {
         fprintf(f, "\t%s", t->stringval);
     }
     if(t->type == OPERATOR) {
+        printf("%s\n", operators[t->operatorval]);
+        printf("%d\n", t->operatorval);
+        printf("%p\n", f);
         fprintf(f, "\t%s", operators[t->operatorval]);
     }
     if(t->type == RESERVED) {

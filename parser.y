@@ -55,30 +55,105 @@ YYSTYPE parseresult;
 %}
 
 // literals and identifiers
-%token _string _integer _floating _identifier
+%token _string _integer _floating _identifier _character
+
+// reserved
+%token _actor _class _for _if _return _while
 
 // operators
-%token _assign
+%token _tilde _percent _caret _and _mult _sub _add _assign _div _pipe
+%token _exclamation _at _pound _lparen _rparen _lsbracket _rsbracket _lcbracket _rcbracket _semicolon _colon _comma _dot _labracket _rabracket _question
+%token _andand _subsub _addadd _multmult _pipepipe _eqeq _neq _leq _geq
+
+// this is bad
+%token _bad
 
 %%
 
-start : statementlist { parseresult = $1; }
+start : program { parseresult = $1; }
 ;
 
-statementlist : statement
-              | statement statementlist { $$ = cons($1, $2); }
+program : actor
+        | classlist actor
+        | program classoractor
+;
+classoractor : class | actor
+;
+classlist : class | class classlist { $$ = cons($1, $2); }
+;
+
+class : _class _identifier _lcbracket _rcbracket
+;
+actor : _actor _identifier _lcbracket actorbody _rcbracket
+;
+
+actorbody : statement
+          | statement actorbody
 ;
 
 statement : assign
+          | _if _lparen expression _rparen statementbody
+          | _for _lparen statementcommalist _semicolon expression _semicolon statementcommalist _rparen statementbody
+          | _while _lparen expression _rparen statementbody
+          | statementbody _while _lparen expression _rparen
+          | _return expression
+;
+statementcommalist  : statement
+                    | statement _comma statementcommalist
+;
+statementbody : _lcbracket _rcbracket
+              | _lcbracket statementlist _rcbracket
+              | _semicolon
 ;
 
-assign : identifier _assign literal { $$ = mkop($2, $1, $3); }
+assign  : _identifier _assign expression
+        | uop _identifier
+        | _identifier uop
+;
+uop : _addadd
+    | _subsub
 ;
 
-identifier : _identifier
+literal : _string | _integer | _floating | _character
 ;
-
-literal : _string | _integer | _floating
+term : literal | _identifier
+;
+pexpression : _lparen expression _rparen
+            | term
+;
+uexpression : _sub pexpression
+            | _exclamation pexpression
+            | pexpression _question
+            | pexpression _exclamation
+            | pexpression
+;
+eop : _multmult
+;
+eexpression : uexpression eop uexpression
+            | uexpression
+;
+mdop  : _mult | _div | _percent
+;
+mdexpression  : eexpression mdop eexpression
+              | eexpression
+;
+asop  : _add | _sub
+;
+asexpression  : mdexpression asop mdexpression
+              | mdexpression
+;
+compop : _eqeq | _neq | _leq | _geq | _labracket | _rabracket
+;
+compexpression  : asexpression compop asexpression
+                | asexpression
+;
+bitop : _and | _pipe | _caret | _andand | _pipepipe | _tilde
+;
+bitexpression : compexpression bitop compexpression
+              | compexpression
+;
+expression  : bitexpression
+            | assign
 ;
 
 %%

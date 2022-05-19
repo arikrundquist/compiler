@@ -5,21 +5,24 @@ test comments and numeric literals
 
 */
 
-x = 123 /* 456 /**
-    78**9**87 **/ 654
-*/ y = 321
-x = 01230 /** 04560 /**
-    078**9**870 **/ 06540
-**/ y = 03210
-a = 123.0
-b = 123.456
-c = 123e-4
-d = 123e4
-e = 123.456e-7
-f = 123.456e7
+actor test1 {
 
-// this is a comment that will block /* <- this comment start
-/* this is a comment that will block // <- this comment start */
+    x = 123 /* 456 /**
+        78**9**87 **/ 654
+    */ y = 321
+    x = 01230 /** 04560 /**
+        078**9**870 **/ 06540
+    **/ y = 03210
+    a = 123.0
+    b = 123.456
+    c = 123e-4
+    d = 123e4
+    e = 123.456e-7
+    f = 123.456e7
 
-str = "comments /* appear // in */ strings"
+    // this is a comment that will block /* <- this comment start
+    /* this is a comment that will block // <- this comment start */
 
+    str = "comments /* appear // in */ strings"
+
+}

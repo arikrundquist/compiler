@@ -1,4 +1,8 @@
+RESERVED	actor
+IDENTIFIER	test2
+OPERATOR	{
 IDENTIFIER	str
 OPERATOR	=
 STRING	OBJECT	testing |	||
 |"|'|\| escape sequences
+OPERATOR	}
