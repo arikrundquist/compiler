@@ -26,9 +26,6 @@ void fpprint(FILE *f, TOKEN t) {
         fprintf(f, "\t%s", t->stringval);
     }
     if(t->type == OPERATOR) {
-        printf("%s\n", operators[t->operatorval]);
-        printf("%d\n", t->operatorval);
-        printf("%p\n", f);
         fprintf(f, "\t%s", operators[t->operatorval]);
     }
     if(t->type == RESERVED) {

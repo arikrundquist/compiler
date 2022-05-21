@@ -73,6 +73,16 @@ YYSTYPE parseresult;
 start : program { parseresult = $1; }
 ;
 
+
+statement : assign
+;
+
+
+
+
+
+
+
 program : actor
         | classlist actor
         | program classoractor
@@ -82,28 +92,31 @@ classoractor : class | actor
 classlist : class | class classlist { $$ = cons($1, $2); }
 ;
 
-class : _class _identifier _lcbracket _rcbracket
+class : _class _identifier optionalclassbody
 ;
-actor : _actor _identifier _lcbracket actorbody _rcbracket
-;
-
-actorbody : statement
-          | statement actorbody
+actor : _actor _identifier optionalactorbody
 ;
 
-statement : assign
-          | _if _lparen expression _rparen statementbody
-          | _for _lparen statementcommalist _semicolon expression _semicolon statementcommalist _rparen statementbody
-          | _while _lparen expression _rparen statementbody
-          | statementbody _while _lparen expression _rparen
-          | _return expression
+optionalclassbody : _lcbracket _rcbracket
+                  | _lcbracket classbody _rcbracket
 ;
-statementcommalist  : statement
-                    | statement _comma statementcommalist
+optionalactorbody : _lcbracket _rcbracket
+                  | _lcbracket actorbody _rcbracket
 ;
-statementbody : _lcbracket _rcbracket
-              | _lcbracket statementlist _rcbracket
-              | _semicolon
+
+classbody : classitem
+          | classitem classbody
+;
+actorbody : actoritem
+          | actoritem actorbody
+;
+actoritem : classitem
+          | actor
+;
+
+classitem : statement
+          //| funcdef
+          //| class
 ;
 
 assign  : _identifier _assign expression
