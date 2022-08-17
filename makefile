@@ -21,6 +21,9 @@ parser.tab.c : *.h parser.y
 mktest% :
 	@touch tests/test$*.test tests/test$*.out
 
+clean : phony
+	rm parser *.yy.c *.tab.c *.tab.h
+
 phony : ;
 
 .PHONY : phony
