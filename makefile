@@ -5,7 +5,7 @@ test : $(TESTS)
 	@echo all passed!
 
 parser : lex.yy.c parser.tab.c *.c
-	gcc *.c -o parser
+	g++ *.c -o parser -Wno-free-nonheap-object
 
 lex.yy.c : *.h lexer.l
 	lex lexer.l

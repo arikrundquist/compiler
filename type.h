@@ -20,7 +20,7 @@ typedef enum datatype {
     OBJECT,
     END_DATA_TYPES
 } datatype;
-typedef enum operator {
+typedef enum operatortype {
     NOOP,
     TILDE,
     PERCENT,
@@ -58,8 +58,8 @@ typedef enum operator {
     LEQ,
     GEQ,
     END_OPERATORS
-} operator;
-typedef enum reserved {
+} operatortype;
+typedef enum reservedtype {
     NORES,
     ACTOR,
     CLASS,
@@ -68,31 +68,24 @@ typedef enum reserved {
     RETURN,
     WHILE,
     END_RESERVED
-} reserved;
+} reservedtype;
 
 typedef struct tokn {
     tokentype type;
     datatype dtype;
-    struct tokn *operands;
-    struct tokn *link;
     union {
         char *stringval;
-        reserved reservedval;
-        operator operatorval;
+        reservedtype reservedval;
+        operatortype operatorval;
         int intval;
         double realval;
     } tokenval;
 } token;
-typedef token *TOKEN;
 #define intval tokenval.intval
 #define reservedval tokenval.reservedval
 #define operatorval tokenval.operatorval
 #define realval tokenval.realval
 #define stringval tokenval.stringval
 
-TOKEN talloc();
-
-
-
-#define YYSTYPE TOKEN
+#define YYSTYPE token
 #endif

@@ -515,48 +515,46 @@ char *yytext;
 #line 1 "lexer.l"
 #line 3 "lexer.l"
 
-
 #include <stdlib.h>
 #include "type.h"
 #include "pprint.h"
 #include "parser.tab.h"
 
+extern "C" int yylex();
+
 int nested_comment = 0;
 
-TOKEN talloc() {
-   TOKEN t = (TOKEN) calloc(1, sizeof(token));
-}
-TOKEN mktoken(tokentype type, datatype dtype) {
-   TOKEN t = talloc();
-   t->type = type;
-   t->dtype = dtype;
+token mktoken(tokentype type, datatype dtype) {
+   token t;
+   t.type = type;
+   t.dtype = dtype;
    return t;
 }
 
-TOKEN makeint() {
+token makeint() {
    int inum;
    sscanf(yytext, "%d", &inum);
-   TOKEN t = mktoken(NUMERIC, INTEGER);
-   t->intval = inum;
+   token t = mktoken(NUMERIC, INTEGER);
+   t.intval = inum;
    return t;
 }
-TOKEN makereal() {
+token makereal() {
    double fnum;
    sscanf(yytext, "%lf", &fnum);
-   TOKEN t = mktoken(NUMERIC, FLOATING);
-   t->realval = fnum;
+   token t = mktoken(NUMERIC, FLOATING);
+   t.realval = fnum;
    return t;
 }
-TOKEN makeid() {
+token makeid() {
    int len = 0;
    for(; yytext[len++] != 0;);
    char *str = (char*) malloc(len);
    for(int i = 0; i < len; str[i] = yytext[i], i++);
-   TOKEN t = mktoken(IDENTIFIER, 0);
-   t->stringval = str;
+   token t = mktoken(IDENTIFIER, NONEDTYPE);
+   t.stringval = str;
    return t;
 }
-TOKEN makechar() {
+token makechar() {
    char c = yytext[1];
    if(c == '\\') {
       c = yytext[2];
@@ -574,11 +572,11 @@ TOKEN makechar() {
          break;
       }
    }
-   TOKEN t = mktoken(NUMERIC, CHARACTER);
-   t->intval = c;
+   token t = mktoken(NUMERIC, CHARACTER);
+   t.intval = c;
    return t;
 }
-TOKEN makestring() {
+token makestring() {
    int len = -2;
    char c;
    for(int i = 0; (c = yytext[i]) != 0; len++, i++) {
@@ -610,25 +608,25 @@ TOKEN makestring() {
       str[i1] = c;
    }
    str[len] = 0;
-   TOKEN t = mktoken(STRING, OBJECT);
-   t->stringval = str;
+   token t = mktoken(STRING, OBJECT);
+   t.stringval = str;
    return t;
 }
-TOKEN makeop(int op) {
-   TOKEN t = mktoken(OPERATOR, 0);
-   t->operatorval = op;
+token makeop(operatortype op) {
+   token t = mktoken(OPERATOR, NONEDTYPE);
+   t.operatorval = op;
    return t;
 }
-TOKEN makeres(int res) {
-   TOKEN t = mktoken(RESERVED, 0);
-   t->reservedval = res;
+token makeres(reservedtype res) {
+   token t = mktoken(RESERVED, NONEDTYPE);
+   t.reservedval = res;
    return t;
 }
 
 
 #define DEBUG 1
 FILE *logfile = NULL;
-TOKEN log_token(TOKEN t) {
+token log_token(token t) {
    if(!DEBUG) {
       return t;
    }
@@ -641,9 +639,9 @@ TOKEN log_token(TOKEN t) {
 #define handle(type, handler) yylval = log_token(handler); return type
 #define op(type, op) handle(type, makeop(op))
 #define res(type, res) handle(type, makeres(res))
-#line 644 "lex.yy.c"
+#line 642 "lex.yy.c"
 
-#line 646 "lex.yy.c"
+#line 644 "lex.yy.c"
 
 #define INITIAL 0
 #define INSIDE_COMMENT 1
@@ -861,10 +859,10 @@ YY_DECL
 		}
 
 	{
-#line 149 "lexer.l"
+#line 147 "lexer.l"
 
 
-#line 867 "lex.yy.c"
+#line 865 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -924,18 +922,18 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 151 "lexer.l"
+#line 149 "lexer.l"
 { /* nothing */ }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 152 "lexer.l"
+#line 150 "lexer.l"
 { /* nothing */ }
 	YY_BREAK
 
 case 3:
 YY_RULE_SETUP
-#line 154 "lexer.l"
+#line 152 "lexer.l"
 { nested_comment++; BEGIN(INSIDE_COMMENT); }
 	YY_BREAK
 
@@ -943,258 +941,258 @@ YY_RULE_SETUP
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 157 "lexer.l"
+#line 155 "lexer.l"
 { /* nothing */ }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 158 "lexer.l"
+#line 156 "lexer.l"
 { if(--nested_comment == 0) { BEGIN(INITIAL); }}
 	YY_BREAK
 
 case 6:
 YY_RULE_SETUP
-#line 161 "lexer.l"
+#line 159 "lexer.l"
 { handle(_integer, makeint()); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 162 "lexer.l"
+#line 160 "lexer.l"
 { handle(_floating, makereal()); }
 	YY_BREAK
 case 8:
 /* rule 8 can match eol */
 YY_RULE_SETUP
-#line 163 "lexer.l"
+#line 161 "lexer.l"
 { handle(_string, makestring()); }
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 164 "lexer.l"
+#line 162 "lexer.l"
 { handle(_character, makechar()); }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 166 "lexer.l"
+#line 164 "lexer.l"
 { res(_actor, ACTOR); }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 167 "lexer.l"
+#line 165 "lexer.l"
 { res(_class, CLASS); }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 168 "lexer.l"
+#line 166 "lexer.l"
 { res(_for, FOR); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 169 "lexer.l"
+#line 167 "lexer.l"
 { res(_if, IF); }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 170 "lexer.l"
+#line 168 "lexer.l"
 { res(_return, RETURN); }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 171 "lexer.l"
+#line 169 "lexer.l"
 { res(_while, WHILE); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 173 "lexer.l"
+#line 171 "lexer.l"
 { op(_tilde, TILDE); }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 174 "lexer.l"
+#line 172 "lexer.l"
 { op(_percent, PERCENT); }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 175 "lexer.l"
+#line 173 "lexer.l"
 { op(_caret, CARET); }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 176 "lexer.l"
+#line 174 "lexer.l"
 { op(_and, AND); }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 177 "lexer.l"
+#line 175 "lexer.l"
 { op(_mult, MULT); }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 178 "lexer.l"
+#line 176 "lexer.l"
 { op(_sub, SUB); }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 179 "lexer.l"
+#line 177 "lexer.l"
 { op(_add, ADD); }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 180 "lexer.l"
+#line 178 "lexer.l"
 { op(_assign, ASSIGN); }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 181 "lexer.l"
+#line 179 "lexer.l"
 { op(_div, DIV); }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 182 "lexer.l"
+#line 180 "lexer.l"
 { op(_pipe, PIPE); }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 183 "lexer.l"
+#line 181 "lexer.l"
 { op(_exclamation, EXCLAMATION); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 184 "lexer.l"
+#line 182 "lexer.l"
 { op(_at, AT); }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 185 "lexer.l"
+#line 183 "lexer.l"
 { op(_pound, POUND); }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 186 "lexer.l"
+#line 184 "lexer.l"
 { op(_lparen, LPAREN); }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 187 "lexer.l"
+#line 185 "lexer.l"
 { op(_rparen, RPAREN); }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 188 "lexer.l"
+#line 186 "lexer.l"
 { op(_lsbracket, LSBRACKET); }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 189 "lexer.l"
+#line 187 "lexer.l"
 { op(_rsbracket, RSBRACKET); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 190 "lexer.l"
+#line 188 "lexer.l"
 { op(_lcbracket, LCBRACKET); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 191 "lexer.l"
+#line 189 "lexer.l"
 { op(_rcbracket, RCBRACKET); }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 192 "lexer.l"
+#line 190 "lexer.l"
 { op(_semicolon, SEMICOLON); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 193 "lexer.l"
+#line 191 "lexer.l"
 { op(_colon, COLON); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 194 "lexer.l"
+#line 192 "lexer.l"
 { op(_comma, COMMA); }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 195 "lexer.l"
+#line 193 "lexer.l"
 { op(_dot, DOT); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 196 "lexer.l"
+#line 194 "lexer.l"
 { op(_labracket, LABRACKET); }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 197 "lexer.l"
+#line 195 "lexer.l"
 { op(_rabracket, RABRACKET); }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 198 "lexer.l"
+#line 196 "lexer.l"
 { op(_question, QUESTION); }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 199 "lexer.l"
+#line 197 "lexer.l"
 { op(_eqeq, EQEQ); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 200 "lexer.l"
+#line 198 "lexer.l"
 { op(_neq, NEQ); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 201 "lexer.l"
+#line 199 "lexer.l"
 { op(_leq, LEQ); }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 202 "lexer.l"
+#line 200 "lexer.l"
 { op(_geq, GEQ); }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 203 "lexer.l"
+#line 201 "lexer.l"
 { op(_andand, ANDAND); }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 204 "lexer.l"
+#line 202 "lexer.l"
 { op(_subsub, SUBSUB); }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 205 "lexer.l"
+#line 203 "lexer.l"
 { op(_addadd, ADDADD); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 206 "lexer.l"
+#line 204 "lexer.l"
 { op(_multmult, MULTMULT); }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 207 "lexer.l"
+#line 205 "lexer.l"
 { op(_pipepipe, PIPEPIPE); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 210 "lexer.l"
+#line 208 "lexer.l"
 { handle(_identifier, makeid()); }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 213 "lexer.l"
-{ handle(_bad, talloc()); }
+#line 211 "lexer.l"
+{ handle(_bad, mktoken(NONETYPE, NONEDTYPE)); }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 215 "lexer.l"
+#line 213 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 1197 "lex.yy.c"
+#line 1195 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(INSIDE_COMMENT):
 	yyterminate();
@@ -2200,7 +2198,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 215 "lexer.l"
+#line 213 "lexer.l"
 
 
 int yywrap() { return(1); }

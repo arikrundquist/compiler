@@ -1,48 +1,46 @@
 
 %{
 
-
 #include <stdlib.h>
 #include "type.h"
 #include "pprint.h"
 #include "parser.tab.h"
 
+extern "C" int yylex();
+
 int nested_comment = 0;
 
-TOKEN talloc() {
-   TOKEN t = (TOKEN) calloc(1, sizeof(token));
-}
-TOKEN mktoken(tokentype type, datatype dtype) {
-   TOKEN t = talloc();
-   t->type = type;
-   t->dtype = dtype;
+token mktoken(tokentype type, datatype dtype) {
+   token t;
+   t.type = type;
+   t.dtype = dtype;
    return t;
 }
 
-TOKEN makeint() {
+token makeint() {
    int inum;
    sscanf(yytext, "%d", &inum);
-   TOKEN t = mktoken(NUMERIC, INTEGER);
-   t->intval = inum;
+   token t = mktoken(NUMERIC, INTEGER);
+   t.intval = inum;
    return t;
 }
-TOKEN makereal() {
+token makereal() {
    double fnum;
    sscanf(yytext, "%lf", &fnum);
-   TOKEN t = mktoken(NUMERIC, FLOATING);
-   t->realval = fnum;
+   token t = mktoken(NUMERIC, FLOATING);
+   t.realval = fnum;
    return t;
 }
-TOKEN makeid() {
+token makeid() {
    int len = 0;
    for(; yytext[len++] != 0;);
    char *str = (char*) malloc(len);
    for(int i = 0; i < len; str[i] = yytext[i], i++);
-   TOKEN t = mktoken(IDENTIFIER, 0);
-   t->stringval = str;
+   token t = mktoken(IDENTIFIER, NONEDTYPE);
+   t.stringval = str;
    return t;
 }
-TOKEN makechar() {
+token makechar() {
    char c = yytext[1];
    if(c == '\\') {
       c = yytext[2];
@@ -60,11 +58,11 @@ TOKEN makechar() {
          break;
       }
    }
-   TOKEN t = mktoken(NUMERIC, CHARACTER);
-   t->intval = c;
+   token t = mktoken(NUMERIC, CHARACTER);
+   t.intval = c;
    return t;
 }
-TOKEN makestring() {
+token makestring() {
    int len = -2;
    char c;
    for(int i = 0; (c = yytext[i]) != 0; len++, i++) {
@@ -96,25 +94,25 @@ TOKEN makestring() {
       str[i1] = c;
    }
    str[len] = 0;
-   TOKEN t = mktoken(STRING, OBJECT);
-   t->stringval = str;
+   token t = mktoken(STRING, OBJECT);
+   t.stringval = str;
    return t;
 }
-TOKEN makeop(int op) {
-   TOKEN t = mktoken(OPERATOR, 0);
-   t->operatorval = op;
+token makeop(operatortype op) {
+   token t = mktoken(OPERATOR, NONEDTYPE);
+   t.operatorval = op;
    return t;
 }
-TOKEN makeres(int res) {
-   TOKEN t = mktoken(RESERVED, 0);
-   t->reservedval = res;
+token makeres(reservedtype res) {
+   token t = mktoken(RESERVED, NONEDTYPE);
+   t.reservedval = res;
    return t;
 }
 
 
 #define DEBUG 1
 FILE *logfile = NULL;
-TOKEN log_token(TOKEN t) {
+token log_token(token t) {
    if(!DEBUG) {
       return t;
    }
@@ -210,7 +208,7 @@ linecomment    [/][/][^\n]*
 {id}        { handle(_identifier, makeid()); }
 
 
-{bad}       { handle(_bad, talloc()); }
+{bad}       { handle(_bad, mktoken(NONETYPE, NONEDTYPE)); }
 
 %%
 

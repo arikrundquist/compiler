@@ -5,9 +5,9 @@
 #include <stdio.h>
 #include "type.h"
 
-extern char *tokentypes[6];
-extern char *datatypes[7];
+extern const char *tokentypes[6];
+extern const char *datatypes[7];
 
-void fpprint(FILE *f, TOKEN t);
+void fpprint(FILE *f, token t);
 
 #endif
